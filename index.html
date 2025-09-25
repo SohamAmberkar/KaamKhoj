@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KaamKhoj - Work Made Simple</title>
+    <style>
+      /* * General Styling & Variables
+         * Based on the "KaamKhoj Logo: Trust, Growth, Energy" slide.
+         * Blue: Trust and reliability
+         * Green: Growth and prosperity
+         * Yellow: Energy and optimism
+        */
+      :root {
+        --primary-blue: #2980b9;
+        --secondary-green: #27ae60;
+        --accent-yellow: #f1c40f;
+        --light-gray: #ecf0f1;
+        --dark-gray: #34495e;
+        --white: #ffffff;
+        --danger-red: #c0392b;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background-color: var(--light-gray);
+        color: var(--dark-gray);
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 950px;
+        margin: 20px auto;
+        padding: 0 15px;
+      }
+
+      /* * Header Section
+         * Contains the logo and the primary user role toggle.
+        */
+      header {
+        background-color: var(--white);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 15px; /* Adds space between the logo and text */
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .logo-img {
+        height: 50px; /* Adjusted height for better alignment */
+        width: auto; /* Maintain aspect ratio */
+      }
+
+      .logo-text {
+        font-size: 2.2em;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin: 0; /* Remove default h1 margin */
+      }
+
+      .logo-text span {
+        color: var(--secondary-green);
+      }
+
+      /* User Role Toggle Switch */
+      .toggle-switch {
+        display: flex;
+        align-items: center;
+        font-size: 1.1em;
+        font-weight: 500;
+      }
+
+      .toggle-switch label {
+        margin: 0 12px;
+        cursor: pointer;
+        transition: opacity 0.3s;
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--primary-blue);
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: var(--secondary-green);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      /* * Main Content Area 
+         * Holds the views for Workers and Employers.
+        */
+      main {
+        padding: 25px;
+        background-color: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      h2 {
+        font-size: 1.8em;
+        color: var(--dark-gray);
+        border-bottom: 3px solid var(--light-gray);
+        padding-bottom: 12px;
+        margin-top: 0;
+      }
+
+      /* * Job Listings Styling
+         * This grid layout is responsive and adapts to screen size.
+        */
+      .job-listings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        margin-top: 20px;
+      }
+
+      .job-card {
+        border: 1px solid #ddd;
+        border-left: 6px solid var(--primary-blue);
+        border-radius: 8px;
+        padding: 20px;
+        background-color: #fdfdfd;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: box-shadow 0.3s, transform 0.3s;
+      }
+      .job-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .job-card h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: var(--primary-blue);
+        font-size: 1.3em;
+      }
+
+      .job-card p {
+        margin: 5px 0;
+        font-size: 1em;
+        color: #555;
+      }
+      .job-card p strong {
+        color: var(--dark-gray);
+      }
+
+      .job-card .salary {
+        font-weight: bold;
+        color: var(--secondary-green);
+        font-size: 1.1em;
+        margin-top: 10px;
+      }
+
+      /* Interactive Buttons */
+      .btn {
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+        margin-top: 20px;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 1.1em;
+        font-weight: 500;
+        transition: background-color 0.3s, transform 0.2s;
+      }
+      .btn:hover {
+        transform: scale(1.02);
+      }
+
+      .apply-btn {
+        background-color: var(--secondary-green);
+        color: var(--white);
+      }
+      .apply-btn:hover {
+        background-color: #229954;
+      }
+
+      .post-job-btn {
+        background-color: var(--primary-blue);
+        color: var(--white);
+      }
+      .post-job-btn:hover {
+        background-color: #2471a3;
+      }
+
+      /* Styles for the new "My Applications" section */
+      .application-status {
+        margin-top: 15px;
+        padding: 8px;
+        border-radius: 6px;
+        font-weight: 500;
+        text-align: center;
+        font-size: 0.95em;
+      }
+
+      .status-review {
+        background-color: var(--accent-yellow);
+        color: var(--dark-gray);
+      }
+
+      /* * Employer View & Job Posting Form 
+         * Designed for clarity and ease of use.
+        */
+      #employer-view h3 {
+        margin-top: 30px;
+        font-size: 1.5em;
+      }
+
+      #job-post-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+        padding: 25px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        background-color: #f9f9f9;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-group.full-width {
+        grid-column: 1 / -1;
+      }
+
+      #job-post-form label {
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #555;
+      }
+
+      #job-post-form input,
+      #job-post-form select {
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1em;
+      }
+      #job-post-form input:focus,
+      #job-post-form select:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 5px rgba(41, 128, 185, 0.5);
+      }
+
+      /* Utility & Responsive Classes */
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 600px) {
+        #job-post-form {
+          grid-template-columns: 1fr;
+        }
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo-container">
+          <img src="image.png" alt="KaamKhoj Logo" class="logo-img" />
+          <h1 class="logo-text">Kaam<span>Khoj</span></h1>
+        </div>
+        <div class="toggle-switch">
+          <label id="worker-label">Worker</label>
+          <label class="switch">
+            <input type="checkbox" id="role-toggle" />
+            <span class="slider"></span>
+          </label>
+          <label id="employer-label" style="opacity: 0.5">Employer</label>
+        </div>
+      </header>
+
+      <main>
+        <!-- ====================================================== -->
+        <!-- WORKER VIEW: Browse and apply for jobs                 -->
+        <!-- This is the default view for job seekers.              -->
+        <!-- ====================================================== -->
+        <div id="worker-view">
+          <h2>Jobs Near You, Opportunities For All.</h2>
+          <div id="job-listings" class="job-listings-grid">
+            <!-- Job cards for workers are dynamically inserted here by JavaScript -->
+          </div>
+
+          <h3 style="margin-top: 40px; font-size: 1.5em">My Applications</h3>
+          <div id="my-applications" class="job-listings-grid">
+            <!-- Applied job cards will be dynamically inserted here -->
+          </div>
+        </div>
+
+        <!-- ====================================================== -->
+        <!-- EMPLOYER VIEW: Post and manage jobs                    -->
+        <!-- Hidden by default, activated by the toggle switch.     -->
+        <!-- ====================================================== -->
+        <div id="employer-view" class="hidden">
+          <h2>Work Made Simple. Post a Job.</h2>
+          <form id="job-post-form">
+            <div class="form-group">
+              <label for="job-title">Job Title</label>
+              <input
+                type="text"
+                id="job-title"
+                placeholder="e.g., Plumber, Cook"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="employer-name">Your Name / Company</label>
+              <input
+                type="text"
+                id="employer-name"
+                placeholder="e.g., Ravi Construction"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="location">Location</label>
+              <input
+                type="text"
+                id="location"
+                placeholder="e.g., Vengadamangalam"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="salary">Salary</label>
+              <input
+                type="text"
+                id="salary"
+                placeholder="e.g., ₹15,000 per month"
+                required
+              />
+            </div>
+            <div class="form-group full-width">
+              <label for="job-type">Job Type</label>
+              <select id="job-type" required>
+                <option value="">Select Job Type</option>
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Contract">Contract</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <button type="submit" class="btn post-job-btn">Post Job</button>
+            </div>
+          </form>
+
+          <h3>Your Posted Jobs</h3>
+          <div id="employer-job-listings" class="job-listings-grid">
+            <!-- Employer's posted jobs are dynamically inserted here -->
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // DOM Element References
+        const roleToggle = document.getElementById("role-toggle");
+        const workerView = document.getElementById("worker-view");
+        const employerView = document.getElementById("employer-view");
+        const workerLabel = document.getElementById("worker-label");
+        const employerLabel = document.getElementById("employer-label");
+
+        const jobListingsContainer = document.getElementById("job-listings");
+        const employerJobListingsContainer = document.getElementById(
+          "employer-job-listings"
+        );
+        const jobPostForm = document.getElementById("job-post-form");
+        const myApplicationsContainer =
+          document.getElementById("my-applications");
+
+        // In-memory "database" of jobs, pre-populated with examples and a status.
+        let jobs = [
+          {
+            id: 1,
+            title: "Experienced Plumber",
+            employer: "Ravi Construction",
+            location: "Chennai",
+            salary: "₹25,000 / month",
+            type: "Full-time",
+            status: "open",
+          },
+          {
+            id: 2,
+            title: "Household Cook",
+            employer: "Priya Sharma",
+            location: "Vengadamangalam",
+            salary: "₹12,000 / month",
+            type: "Part-time",
+            status: "open",
+          },
+          {
+            id: 3,
+            title: "Delivery Driver",
+            employer: "QuickCart Logistics",
+            location: "Chennai",
+            salary: "₹18,000 / month",
+            type: "Contract",
+            status: "open",
+          },
+          {
+            id: 4,
+            title: "Office Housekeeper",
+            employer: "AGS Corp",
+            location: "Madurai",
+            salary: "₹14,000 / month",
+            type: "Full-time",
+            status: "applied",
+          },
+        ];
+
+        /**
+         * Renders job cards in both the worker and employer views.
+         * Clears existing content and rebuilds it from the `jobs` array.
+         * Separates jobs into "open" and "applied" for the worker.
+         */
+        function renderJobs() {
+          // Clear all dynamic containers
+          jobListingsContainer.innerHTML = "";
+          employerJobListingsContainer.innerHTML = "";
+          myApplicationsContainer.innerHTML = "";
+
+          // Populate Employer's "Your Posted Jobs" view
+          if (jobs.length === 0) {
+            employerJobListingsContainer.innerHTML =
+              "<p>You have not posted any jobs yet.</p>";
+          } else {
+            jobs.forEach((job) => {
+              const employerJobCardHTML = `
+                        <div class="job-card" style="border-left-color: var(--secondary-green);">
+                             <h3>${job.title}</h3>
+                             <p><strong>Location:</strong> ${job.location}</p>
+                             <p><strong>Type:</strong> ${job.type}</p>
+                             <p class="salary">${job.salary}</p>
+                        </div>
+                        `;
+              employerJobListingsContainer.insertAdjacentHTML(
+                "beforeend",
+                employerJobCardHTML
+              );
+            });
+          }
+
+          // Filter jobs for the Worker's view
+          const openJobs = jobs.filter((job) => job.status === "open");
+          const appliedJobs = jobs.filter((job) => job.status === "applied");
+
+          // Populate "Jobs Near You" for the worker
+          if (openJobs.length === 0) {
+            jobListingsContainer.innerHTML =
+              "<p>No new jobs available right now. Check back later!</p>";
+          } else {
+            openJobs.forEach((job) => {
+              const workerJobCardHTML = `
+                            <div class="job-card">
+                                <div>
+                                    <h3>${job.title}</h3>
+                                    <p><strong>Employer:</strong> ${job.employer}</p>
+                                    <p><strong>Location:</strong> ${job.location}</p>
+                                    <p><strong>Type:</strong> ${job.type}</p>
+                                    <p class="salary">${job.salary}</p>
+                                </div>
+                                <button class="btn apply-btn" onclick="applyForJob(${job.id})">Apply Now</button>
+                            </div>
+                        `;
+              jobListingsContainer.insertAdjacentHTML(
+                "beforeend",
+                workerJobCardHTML
+              );
+            });
+          }
+
+          // Populate "My Applications" for the worker
+          if (appliedJobs.length === 0) {
+            myApplicationsContainer.innerHTML =
+              "<p>You haven't applied for any jobs yet.</p>";
+          } else {
+            appliedJobs.forEach((job) => {
+              const applicationCardHTML = `
+                            <div class="job-card" style="border-left-color: var(--accent-yellow);">
+                                <div>
+                                    <h3>${job.title}</h3>
+                                    <p><strong>Employer:</strong> ${job.employer}</p>
+                                    <p><strong>Location:</strong> ${job.location}</p>
+                                    <p class="salary">${job.salary}</p>
+                                    <div class="application-status status-review">Status: Under Review</div>
+                                </div>
+                            </div>
+                        `;
+              myApplicationsContainer.insertAdjacentHTML(
+                "beforeend",
+                applicationCardHTML
+              );
+            });
+          }
+        }
+
+        /**
+         * Simulates the job application process based on the State Transition Diagram.
+         * Finds the job, changes its status to 'applied', and re-renders the UI.
+         * @param {number} jobId - The ID of the job being applied for.
+         */
+        window.applyForJob = function (jobId) {
+          const job = jobs.find((j) => j.id === jobId);
+          if (job && job.status === "open") {
+            // This simulates the state transition: Browsing -> Application Submitted
+            job.status = "applied";
+
+            // This simulates the Notification event
+            alert(
+              `Application for "${job.title}" submitted successfully!\n\nYou can track its status under "My Applications".`
+            );
+
+            // Re-render the UI to reflect the new state
+            renderJobs();
+          }
+        };
+
+        // Event listener for the role toggle switch
+        roleToggle.addEventListener("change", () => {
+          workerView.classList.toggle("hidden");
+          employerView.classList.toggle("hidden");
+
+          // Update label opacity to indicate the active view
+          if (roleToggle.checked) {
+            // Employer is selected
+            workerLabel.style.opacity = "0.5";
+            employerLabel.style.opacity = "1";
+          } else {
+            // Worker is selected
+            workerLabel.style.opacity = "1";
+            employerLabel.style.opacity = "0.5";
+          }
+        });
+
+        // Event listener for the "Post Job" form submission
+        jobPostForm.addEventListener("submit", (e) => {
+          e.preventDefault(); // Prevent the browser from reloading
+
+          const newJob = {
+            id: jobs.length > 0 ? Math.max(...jobs.map((j) => j.id)) + 1 : 1,
+            title: document.getElementById("job-title").value,
+            employer: document.getElementById("employer-name").value,
+            location: document.getElementById("location").value,
+            salary: document.getElementById("salary").value,
+            type: document.getElementById("job-type").value,
+          };
+
+          jobs.push(newJob);
+          renderJobs(); // Refresh the job listings
+
+          jobPostForm.reset();
+          alert("Job posted successfully!");
+        });
+
+        // Initial render of jobs when the page loads
+        renderJobs();
+      });
+    </script>
+  </body>
+</html>
