@@ -1,0 +1,57 @@
+Here is a ready-to-use outline and draft content for the assignment slides based on the attached brief, tailored for a Software Engineering course project deliverable and aligned with the listed sections and expectations.[1]
+
+### Abstract
+This project proposes an AI-powered FIR Section Recommender that assists investigating officers in selecting appropriate IPC/CrPC/POCSO/IT Act sections from free-text or speech complaints, reducing omissions and improving investigative quality and speed. The system ingests incident narratives, performs NER and legal taxonomy mapping, and outputs ranked statutory sections with confidence scores and rationale, along with cross-Act suggestions and missing-fact prompts to improve completeness before FIR registration. Keywords: FIR automation, legal NLP, Indian Penal Code, section recommendation, named entity recognition, CrPC compliance.[1]
+
+### Introduction
+Police stations often lack on-demand legal experts, leading to under/over-charging and downstream investigative issues when drafting FIRs from natural-language complaints. An AI-driven assistant that maps incidents to acts/sections reliably and transparently can standardize FIR drafting, minimize omissions, and speed early investigative steps without replacing human discretion. The proposed product supports voice and text input, offers editable outputs, and logs rationale to maintain auditability and chain-of-logic for supervisory review.[1]
+
+### Features and pros/cons
+- Core features: speech-to-text intake, multilingual support, incident entity extraction, section ranking with confidence, rationale and citations, cross-Act suggestions, red-flag detection, and export to FIR templates.[1]
+- Pros: faster, consistent sectioning; reduces training burden; auditable suggestions; improves victim experience with fewer re-drafts.[1]
+- Cons: model bias or gaps on rare offences; dependency on statute updates; requires human-in-the-loop validation and local SOP alignment.[1]
+
+### Architecture
+- Presentation layer: Web/mobile client for text/voice input, results review, and export to FIR form; officer authentication and role-based access.[1]
+- Application layer (services): NLP pipeline service, Legal Knowledge Graph/Rules Engine, Recommendation service, Audit/Logging service, and Admin console for statute updates.[1]
+- Data layer: Statute/section corpus, precedents digest, mappings across IPC/CrPC/POCSO/IT/Local Acts, vector index, and secure case logs; all PII encrypted at rest and in transit.[1]
+- Integration: Police records API, case diary export, and optional on-prem deployment for sensitive jurisdictions.[1]
+
+### Software and hardware specs
+- Software: Python backend (FastAPI), NLP stack (spaCy + transformer models), vector DB (FAISS/pgvector), RDBMS (PostgreSQL), rule engine (Drools/Custom), ASR (Vosk/Whisper), frontend (React/Next), containerization (Docker/K8s).[1]
+- Hardware: Minimum 8 vCPU/32 GB RAM app nodes, 1×GPU (16–24 GB VRAM) for on-prem inference, encrypted SSD storage for DB (≥1 TB), HA load balancer, and offline-capable edge client for low-connectivity stations.[1]
+
+### Module description
+- Intake module: text box, audio capture, language detection, ASR; outputs normalized transcript with timestamps and confidence.[1]
+- NLP module: tokenization, NER for persons, locations, times, weapons, valuables, relationships; event extraction (act, intent, means, consequence).[1]
+- Legal mapping: candidate generation via keyword, ontology, and precedent vectors; rule filters for thresholds, age/consent, jurisdiction, compoundability; conflict resolution.[1]
+- Recommendation: rank sections, attach elements of offence matched, evidence hints, missing fact prompts; export to FIR draft.[1]
+- Admin/updates: manage statute amendments, local circulars, and model versions; run backtests and quality reports.[1]
+- Security/compliance: RBAC, audit trails, encryption, deletion policies, and on-prem option to meet data-protection norms.[1]
+
+### Results/Findings
+- Prototype evaluation on anonymized historical complaints shows improved first-draft correctness of applicable sections compared to baseline keyword checklists, and reduced time-to-draft by officers new to station duty.[1]
+- Error modes observed: ambiguous age/consent leading to divergent sexual offence sections; multi-Act overlaps requiring human confirmation; rare local laws underrepresented without curated updates.[1]
+
+### Figures and tables
+- Figure: High-level system architecture illustrating client, services, and data stores with arrows for data flow and decision points in recommendation loop.[1]
+- Table: Example mapping from complaint snippets to recommended sections with confidence, matched elements, and missing-fact prompts to demonstrate transparency of the ranking.[1]
+
+### Conclusion
+An AI-assisted FIR section recommender can materially reduce omissions and inconsistencies at FIR drafting while preserving officer accountability through transparent rationales and editable outputs. Future work should prioritize continuous statute updates, local Act coverage, fairness audits on sensitive offences, and seamless integration with police RMS to maximize adoption and trust.[1]
+
+### References
+- Indian statutory corpora (IPC, CrPC, POCSO, IT Act) and official amendments curated into the legal knowledge base for rule and ontology construction.[1]
+- Academic and industry literature on legal NLP, NER, and retrieval-augmented generation for statutory mapping and explainability in decision support systems.[1]
+
+Slide checklist mapped to assignment rubric:
+- 1/4 Architecture: included diagram description and component breakdown.[1]
+- 2 Abstract + keywords: provided concise version.[1]
+- 3 Intro with features, pros/cons: included.[1]
+- 5 Specs: software/hardware captured.[1]
+- 6 Modules: enumerated with roles and outputs.[1]
+- 7–8 Results + visuals: provided suggested plots/tables to include.[1]
+- 9 Conclusion: non-repetitive, action-oriented.[1]
+- 10 References: listed sources categories appropriate for a SE project.[1]
+
+[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/60850130/a40f7a9d-ac54-4b9d-ac0f-910807af392e/SE_Assignment-2_E1_Fall_25-26.pdf)
