@@ -1,4 +1,19 @@
 import React, { useState, useEffect } from "react";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 // --- 1. STYLES OBJECT ---
 // All styles are in this file to prevent import errors
@@ -33,7 +48,7 @@ const styles = {
   main: {
     flex: 1, // Takes up remaining vertical space
     padding: "25px 40px",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#f4f7f6", // Changed main bg slightly
     overflowY: "auto", // Main content area is scrollable
   },
   // Logo & Header
@@ -97,10 +112,11 @@ const styles = {
     borderLeft: "5px solid #2980b9",
     borderRadius: "8px",
     padding: "20px",
-    backgroundColor: "#fcfcfc",
+    backgroundColor: "#ffffff", // Changed from #fcfcfc
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
   },
   jobCardTitle: {
     marginTop: 0,
@@ -150,7 +166,8 @@ const styles = {
     padding: "25px",
     border: "1px solid #ddd",
     borderRadius: "8px",
-    backgroundColor: "#fdfdfd",
+    backgroundColor: "#ffffff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
   },
   formInput: {
     padding: "12px",
@@ -167,7 +184,8 @@ const styles = {
     padding: "20px",
     border: "1px solid #ddd",
     borderRadius: "8px",
-    backgroundColor: "#fdfdfd",
+    backgroundColor: "#ffffff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
   },
   templateButton: {
     backgroundColor: "#eaf2f8",
@@ -309,6 +327,8 @@ const styles = {
     marginBottom: "30px",
     border: "1px solid #ecf0f1",
     borderRadius: "8px",
+    backgroundColor: "#ffffff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
   },
   employerJobHeader: {
     backgroundColor: "#fdfdfd",
@@ -369,74 +389,51 @@ const styles = {
     cursor: "pointer",
   },
 
-  // Analytics Dashboard (NEW)
-  analyticsContainer: {
+  // === START ANALYTICS STYLE UPDATE ===
+  // These styles replace the old analytics styles
+  kpiContainer: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
     gap: "20px",
+    marginBottom: "32px",
   },
-  statCard: {
-    backgroundColor: "#fdfdfd",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
+  kpiCard: {
+    backgroundColor: "#ffffff",
     padding: "20px",
+    borderRadius: "8px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
   },
-  statTitle: {
-    fontSize: "1.1em",
-    fontWeight: "600",
-    color: "#34495e",
-    margin: "0 0 10px 0",
-  },
-  statValue: {
-    fontSize: "2.5em",
-    fontWeight: "700",
+  kpiValue: {
+    fontSize: "2.25rem",
+    fontWeight: "bold",
     color: "#2980b9",
-    margin: 0,
+    margin: "0 0 8px 0",
   },
-  chartContainer: {
-    backgroundColor: "#fdfdfd",
-    border: "1px solid #ddd",
+  kpiLabel: {
+    fontSize: "1rem",
+    color: "#7f8c8d",
+    margin: "0",
+  },
+  chartsContainer: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+    gap: "24px",
+  },
+  chartBox: {
+    backgroundColor: "#ffffff",
+    padding: "24px",
     borderRadius: "8px",
-    padding: "20px",
-    marginTop: "20px",
-    gridColumn: "1 / -1", // Make chart span full width
+    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+    minHeight: "400px", // <-- CHANGED
   },
   chartTitle: {
-    fontSize: "1.3em",
+    fontSize: "1.25rem",
     fontWeight: "600",
-    color: "#34495e",
-    margin: "0 0 20px 0",
+    color: "#2c3e50",
+    marginBottom: "20px",
+    textAlign: "center",
   },
-  barChart: {
-    display: "flex",
-    justifyContent: "space-around",
-    alignItems: "flex-end",
-    height: "250px",
-    borderLeft: "2px solid #ecf0f1",
-    borderBottom: "2px solid #ecf0f1",
-    padding: "10px",
-  },
-  barWrapper: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    flex: 1,
-  },
-  bar: {
-    width: "60%",
-    backgroundColor: "#3498db",
-    transition: "height 0.5s ease-out",
-  },
-  barLabel: {
-    marginTop: "8px",
-    fontSize: "0.9em",
-    fontWeight: "500",
-  },
-  barValue: {
-    marginBottom: "5px",
-    fontSize: "1.1em",
-    fontWeight: "600",
-  },
+  // === END ANALYTICS STYLE UPDATE ===
 
   // Global Styles
   globalStyle: `
@@ -1048,8 +1045,36 @@ const EmployerDashboard = ({ jobs, applications, token, refreshData }) => {
   );
 };
 
+// === START COMPONENT REPLACEMENT ===
+// The old AnalyticsDashboard component is replaced with this new one.
+
+// Helper functions for the Analytics Dashboard
+const PIE_COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
+
+const formatObjectForChart = (obj) => {
+  return Object.entries(obj)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value); // Sort descending
+};
+
+const formatTimeSeriesForChart = (obj) => {
+  return Object.entries(obj)
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort by date
+};
+
+// Reusable component for the top stat cards
+// Note: This uses the new kpi* styles, not the old stat* styles
+const KpiCard = ({ value, label }) => (
+  <div style={styles.kpiCard}>
+    <p style={styles.kpiValue}>{value}</p>
+    <p style={styles.kpiLabel}>{label}</p>
+  </div>
+);
+
 /**
  * AnalyticsDashboard (Admin - NEW)
+ * This component is now powered by Recharts
  */
 const AnalyticsDashboard = ({ token }) => {
   const [analytics, setAnalytics] = useState(null);
@@ -1086,62 +1111,239 @@ const AnalyticsDashboard = ({ token }) => {
     return <p style={styles.emptyState}>Could not load analytics data.</p>;
   }
 
-  const { totals, byRole, byJobType, byAppStatus } = analytics;
+  // --- Prepare Data for Charts ---
+  const { totals, byRole, byJobType, byAppStatus, timeSeries, aggregations } =
+    analytics;
 
-  // Helper for Bar Chart
-  const BarChart = ({ title, data }) => {
-    const entries = Object.entries(data);
-    const maxValue = Math.max(...entries.map(([, value]) => value));
+  const signupsData = formatTimeSeriesForChart(timeSeries.userSignups);
+  const jobsData = formatTimeSeriesForChart(timeSeries.jobPosts);
+  const appsData = formatTimeSeriesForChart(timeSeries.applications);
 
-    return (
-      <div style={styles.chartContainer}>
-        <h3 style={styles.chartTitle}>{title}</h3>
-        <div style={styles.barChart}>
-          {entries.map(([label, value]) => (
-            <div key={label} style={styles.barWrapper}>
-              <div style={styles.barValue}>{value}</div>
-              <div
-                style={{
-                  ...styles.bar,
-                  height: `${(value / (maxValue || 1)) * 100}%`,
-                  backgroundColor:
-                    label === "worker"
-                      ? "#2980b9"
-                      : label === "employer"
-                      ? "#27ae60"
-                      : label === "admin"
-                      ? "#f39c12"
-                      : "#3498db",
-                }}
-              ></div>
-              <div style={styles.barLabel}>{label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
+  const roleData = formatObjectForChart(byRole);
+  const jobTypeData = formatObjectForChart(byJobType);
+  const appStatusData = formatObjectForChart(byAppStatus);
 
-  const StatCard = ({ title, value }) => (
-    <div style={styles.statCard}>
-      <h4 style={styles.statTitle}>{title}</h4>
-      <p style={styles.statValue}>{value}</p>
-    </div>
-  );
+  const locationData = formatObjectForChart(aggregations.jobsByLocation).slice(
+    0,
+    10
+  ); // Top 10
+  const employerData = formatObjectForChart(aggregations.topEmployers).slice(
+    0,
+    5
+  ); // Top 5
+  const workerData = formatObjectForChart(aggregations.topWorkers).slice(0, 5); // Top 5
 
   return (
     <>
-      <div style={styles.analyticsContainer}>
-        <StatCard title="Total Users" value={totals.users} />
-        <StatCard title="Total Jobs Posted" value={totals.jobs} />
-        <StatCard title="Total Applications" value={totals.applications} />
+      {/* --- 1. KPI Stat Cards --- */}
+      <div style={styles.kpiContainer}>
+        <KpiCard value={totals.users} label="Total Users" />
+        <KpiCard value={totals.jobs} label="Total Jobs Posted" />
+        <KpiCard value={totals.applications} label="Total Applications" />
+        <KpiCard value={totals.avgAppsPerJob} label="Avg. Apps per Job" />
+        <KpiCard value={`${totals.approvalRate}%`} label="Approval Rate" />
       </div>
-      <BarChart title="User Roles" data={byRole} />
-      <BarChart title="Job Types" data={byJobType} />
-      <BarChart title="Application Status" data={byAppStatus} />
+
+      {/* --- 2. Charts Container --- */}
+      <div style={styles.chartsContainer}>
+        {/* Chart: Platform Growth */}
+        <div style={styles.chartBox}>
+          <h3 style={styles.chartTitle}>Platform Growth Over Time</h3>
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+            <LineChart
+              data={signupsData}
+              margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Legend verticalAlign="bottom" />
+              <Line
+                type="monotone"
+                dataKey="count"
+                name="User Signups"
+                stroke="#8884d8"
+              />
+              <Line
+                type="monotone"
+                dataKey="count"
+                name="Job Posts"
+                data={jobsData}
+                stroke="#82ca9d"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Chart: Application Velocity */}
+        <div style={styles.chartBox}>
+          <h3 style={styles.chartTitle}>Application Velocity</h3>
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+            <LineChart
+              data={appsData}
+              margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Legend verticalAlign="bottom" />
+              <Line
+                type="monotone"
+                dataKey="count"
+                name="Applications"
+                stroke="#ff7300"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Chart: Job Postings by Location (Top 10) */}
+        <div style={styles.chartBox}>
+          <h3 style={styles.chartTitle}>Jobs by Location (Top 10)</h3>
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+            <BarChart
+              data={locationData}
+              layout="vertical"
+              margin={{ top: 5, right: 20, left: 60, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis type="category" dataKey="name" width={80} />
+              <Tooltip />
+              <Legend verticalAlign="bottom" />
+              <Bar dataKey="value" name="Job Posts" fill="#3498db" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Chart: Top 5 Employers */}
+        <div style={styles.chartBox}>
+          <h3 style={styles.chartTitle}>Top 5 Employers</h3>
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+            <BarChart
+              data={employerData}
+              layout="vertical"
+              margin={{ top: 5, right: 20, left: 60, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis type="category" dataKey="name" width={80} />
+              <Tooltip />
+              <Legend verticalAlign="bottom" />
+              <Bar dataKey="value" name="Jobs Posted" fill="#9b59b6" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Chart: Job Type Distribution */}
+        <div style={styles.chartBox}>
+          <h3 style={styles.chartTitle}>Job Type Distribution</h3>
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+            <PieChart>
+              <Pie
+                data={jobTypeData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                fill="#8884d8"
+                label
+              >
+                {jobTypeData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={PIE_COLORS[index % PIE_COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend verticalAlign="bottom" />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Chart: Application Status */}
+        <div style={styles.chartBox}>
+          <h3 style={styles.chartTitle}>Application Status</h3>
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+            <PieChart>
+              <Pie
+                data={appStatusData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                fill="#8884d8"
+                label
+              >
+                {appStatusData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={PIE_COLORS[index % PIE_COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend verticalAlign="bottom" />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Chart: User Role Distribution */}
+        <div style={styles.chartBox}>
+          <h3 style={styles.chartTitle}>User Role Distribution</h3>
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+            <PieChart>
+              <Pie
+                data={roleData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                fill="#8884d8"
+                label
+              >
+                {roleData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={PIE_COLORS[index % PIE_COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend verticalAlign="bottom" />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Chart: Top 5 Workers */}
+        <div style={styles.chartBox}>
+          <h3 style={styles.chartTitle}>Top 5 Most Active Workers</h3>
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+            <BarChart
+              data={workerData}
+              layout="vertical"
+              margin={{ top: 5, right: 20, left: 60, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis type="category" dataKey="name" width={80} />
+              <Tooltip />
+              <Legend verticalAlign="bottom" />
+              <Bar dataKey="value" name="Applications Sent" fill="#e67e22" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </>
   );
 };
+// === END COMPONENT REPLACEMENT ===
 
 // --- 4. MAIN APP COMPONENT ---
 export default function App() {
