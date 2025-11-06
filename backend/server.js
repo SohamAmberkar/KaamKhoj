@@ -320,6 +320,136 @@ app.get("/api/job-templates", authenticateToken, async (req, res) => {
   res.json(templates);
 });
 
+// --- 6. ML PREDICTION LOGIC (NEW) ---
+
+/**
+ * Calculates the historical approval rate for a given user (worker or employer).
+ * @param {Firestore} db - The Firestore database instance.
+ * @param {CollectionReference} appsCollection - Reference to the applications collection.
+ * @param {string} field - The field to query by ("workerId" or "employerId").
+ * @param {string} value - The ID of the worker or employer.
+ * @returns {Promise<number>} A rate between 0.0 and 1.0. Defaults to 0.5 if no history.
+ */
+const getHistoricalApprovalRate = async (db, appsCollection, field, value) => {
+  try {
+    const q = query(
+      appsCollection,
+      where(field, "==", value),
+      where("status", "in", ["Approved", "Rejected"]) // Only look at completed applications
+    );
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return 0.5; // Default to 50% "neutral" score if no history
+    }
+
+    let approved = 0;
+    snapshot.docs.forEach((doc) => {
+      if (doc.data().status === "Approved") {
+        approved++;
+      }
+    });
+    return approved / snapshot.size;
+  } catch (error) {
+    console.error(
+      `Error calculating approval rate for ${field} ${value}:`,
+      error
+    );
+    return 0.5; // Default to 50% on error
+  }
+};
+
+/**
+ * Scores a worker's message based on length and keywords.
+ * @param {string} workerMessage - The message from the worker.
+ * @returns {number} A score between 0 and 30.
+ */
+const scoreWorkerMessage = (workerMessage) => {
+  if (!workerMessage || workerMessage.trim().length === 0) return 0; // 0 points for no message
+
+  const length = workerMessage.length;
+  let score = 0;
+
+  // 1. Score based on length
+  if (length < 20) score = 10;
+  else if (length >= 20 && length < 100) score = 20;
+  else if (length >= 100) score = 25;
+
+  // 2. Score based on keywords
+  const keywords = [
+    "interested",
+    "excited",
+    "skill",
+    "experience",
+    "eager",
+    "fit",
+    "resume",
+  ];
+  const lowerMessage = workerMessage.toLowerCase();
+  if (keywords.some((keyword) => lowerMessage.includes(keyword))) {
+    score += 5; // Add bonus for keywords
+  }
+
+  return Math.min(score, 30); // Cap at 30
+};
+
+/**
+ * Predicts the success score of a new application.
+ * @param {Firestore} db - The Firestore database instance.
+ * @param {string} jobId - The ID of the job being applied for.
+ * @param {string} workerId - The ID of the applying worker.
+ * @param {string} workerMessage - The message from the worker.
+ * @param {string} employerId - The ID of the employer posting the job.
+ * @returns {Promise<number>} A final prediction score between 0 and 100.
+ */
+const predictApplicationSuccess = async (
+  db,
+  jobId,
+  workerId,
+  workerMessage,
+  employerId
+) => {
+  const appsCollection = collection(db, APPLICATIONS_COLLECTION);
+
+  // 1. Get Employer Approval Rate (40% weight)
+  const employerRate = await getHistoricalApprovalRate(
+    db,
+    appsCollection,
+    "employerId",
+    employerId
+  );
+  const employerScore = employerRate * 40;
+  console.log(
+    `[ML] Employer ${employerId} Rate: ${employerRate.toFixed(
+      2
+    )}, Score: ${employerScore.toFixed(2)}`
+  );
+
+  // 2. Get Worker Approval Rate (30% weight)
+  const workerRate = await getHistoricalApprovalRate(
+    db,
+    appsCollection,
+    "workerId",
+    workerId
+  );
+  const workerScore = workerRate * 30;
+  console.log(
+    `[ML] Worker ${workerId} Rate: ${workerRate.toFixed(
+      2
+    )}, Score: ${workerScore.toFixed(2)}`
+  );
+
+  // 3. Get Message Quality Score (30% weight)
+  const messageScore = scoreWorkerMessage(workerMessage); // Already capped at 30
+  console.log(`[ML] Message Score: ${messageScore.toFixed(2)}`);
+
+  // 4. Calculate final score
+  const finalScore = employerScore + workerScore + messageScore;
+  return Number(finalScore.toFixed(2)); // Return a clean number
+};
+
+// --- END ML PREDICTION LOGIC ---
+
 // --- 7. APPLICATIONS ROUTES ---
 app.post("/api/applications", authenticateToken, async (req, res) => {
   const { jobId, workerMessage } = req.body;
@@ -347,6 +477,27 @@ app.post("/api/applications", authenticateToken, async (req, res) => {
         .status(400)
         .json({ message: "You have already applied for this job." });
 
+    // --- START ML PREDICTION (NEW) ---
+    // We have:
+    // db (database)
+    // jobId (from req.body)
+    // userId (from req.user, this is the workerId)
+    // workerMessage (from req.body)
+    // jobData.employerId (from the job we just fetched)
+
+    console.log(
+      `[ML] Calculating prediction score for worker ${userId} on job ${jobId}...`
+    );
+    const predictionScore = await predictApplicationSuccess(
+      db,
+      jobId,
+      userId,
+      workerMessage || "",
+      jobData.employerId
+    );
+    console.log(`[ML] Final Prediction Score: ${predictionScore}`);
+    // --- END ML PREDICTION (NEW) ---
+
     const newApplication = {
       jobId,
       workerId: userId,
@@ -357,7 +508,9 @@ app.post("/api/applications", authenticateToken, async (req, res) => {
       appliedAt: serverTimestamp(),
       jobTitle: jobData.title,
       jobLocation: jobData.location,
+      predictionScore: predictionScore, // <-- SAVING THE SCORE!
     };
+
     const docRef = await addDoc(appRef, newApplication);
     console.log(`New application for job ${jobId} by ${email}`);
     res.status(201).json({
@@ -457,7 +610,7 @@ app.put(
           }`
         );
         return res.status(403).json({
-          message: "You are not authorized to update this application.",
+          message: "You are not authorized to update this-application.",
         });
       }
 

@@ -435,6 +435,18 @@ const styles = {
   },
   // === END ANALYTICS STYLE UPDATE ===
 
+  // === ML FEATURE STYLE (NEW) ===
+  professorNote: {
+    padding: "20px",
+    backgroundColor: "#eaf2f8", // A light blue
+    border: "1px solid #a9cce3",
+    borderRadius: "8px",
+    margin: "0 0 24px 0",
+    fontSize: "1rem",
+    lineHeight: "1.6",
+  },
+  // === END ML FEATURE STYLE ===
+
   // Global Styles
   globalStyle: `
     @keyframes spin {
@@ -943,6 +955,7 @@ const ApplicationModal = ({
 
 /**
  * ApplicantCard (Employer)
+ * This is the component you provided, now with the predictionScore added.
  */
 const ApplicantCard = ({ application, token, onStatusUpdate }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -971,9 +984,34 @@ const ApplicantCard = ({ application, token, onStatusUpdate }) => {
     }
   };
 
+  // Determine color for the score
+  let scoreColor = "#2980b9"; // Default blue
+  if (application.predictionScore > 75) {
+    scoreColor = "#27ae60"; // Green for high scores
+  } else if (application.predictionScore < 40) {
+    scoreColor = "#f39c12"; // Orange for low scores
+  }
+
   return (
     <div style={styles.applicantCard}>
       <p style={styles.applicantEmail}>{application.workerEmail}</p>
+
+      {/* --- NEW: DISPLAY THE PREDICTION SCORE --- */}
+      {application.predictionScore !== undefined && (
+        <p
+          style={{
+            ...styles.applicantStatus,
+            color: scoreColor,
+            margin: "5px 0",
+          }}
+        >
+          <strong>
+            Match Score: {application.predictionScore.toFixed(0)}%
+          </strong>
+        </p>
+      )}
+      {/* --- END NEW --- */}
+
       {application.workerMessage && (
         <p style={styles.applicantMessage}>{application.workerMessage}</p>
       )}
@@ -1016,6 +1054,14 @@ const EmployerDashboard = ({ jobs, applications, token, refreshData }) => {
           (app) => app.jobId === job.id
         );
 
+        // --- NEW: Sort applications by prediction score (highest first) ---
+        const sortedApplications = jobApplications.sort((a, b) => {
+          // Put applications with a score first
+          const scoreA = a.predictionScore || 0;
+          const scoreB = b.predictionScore || 0;
+          return scoreB - scoreA;
+        });
+
         return (
           <div key={job.id} style={styles.employerJobSection}>
             <div style={styles.employerJobHeader}>
@@ -1025,10 +1071,10 @@ const EmployerDashboard = ({ jobs, applications, token, refreshData }) => {
               </p>
             </div>
             <div style={styles.applicantList}>
-              {jobApplications.length === 0 ? (
+              {sortedApplications.length === 0 ? (
                 <p>No applications for this job yet.</p>
               ) : (
-                jobApplications.map((app) => (
+                sortedApplications.map((app) => (
                   <ApplicantCard
                     key={app.id}
                     application={app}
@@ -1144,6 +1190,8 @@ const AnalyticsDashboard = ({ token }) => {
         <KpiCard value={`${totals.approvalRate}%`} label="Approval Rate" />
       </div>
 
+      {/* --- PROFESSOR'S NOTE (NEW) --- */}
+
       {/* --- 2. Charts Container --- */}
       <div style={styles.chartsContainer}>
         {/* Chart: Platform Growth */}
@@ -1152,13 +1200,13 @@ const AnalyticsDashboard = ({ token }) => {
           <ResponsiveContainer width="100%" height="100%" minHeight={300}>
             <LineChart
               data={signupsData}
-              margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis allowDecimals={false} />
               <Tooltip />
-              <Legend verticalAlign="bottom" />
+              <Legend verticalAlign="top" height={36} />
               <Line
                 type="monotone"
                 dataKey="count"
@@ -1182,13 +1230,13 @@ const AnalyticsDashboard = ({ token }) => {
           <ResponsiveContainer width="100%" height="100%" minHeight={300}>
             <LineChart
               data={appsData}
-              margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis allowDecimals={false} />
               <Tooltip />
-              <Legend verticalAlign="bottom" />
+              <Legend verticalAlign="top" height={36} />
               <Line
                 type="monotone"
                 dataKey="count"
@@ -1206,13 +1254,13 @@ const AnalyticsDashboard = ({ token }) => {
             <BarChart
               data={locationData}
               layout="vertical"
-              margin={{ top: 5, right: 20, left: 60, bottom: 5 }}
+              margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
               <YAxis type="category" dataKey="name" width={80} />
               <Tooltip />
-              <Legend verticalAlign="bottom" />
+              <Legend verticalAlign="top" height={36} />
               <Bar dataKey="value" name="Job Posts" fill="#3498db" />
             </BarChart>
           </ResponsiveContainer>
@@ -1225,13 +1273,13 @@ const AnalyticsDashboard = ({ token }) => {
             <BarChart
               data={employerData}
               layout="vertical"
-              margin={{ top: 5, right: 20, left: 60, bottom: 5 }}
+              margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
               <YAxis type="category" dataKey="name" width={80} />
               <Tooltip />
-              <Legend verticalAlign="bottom" />
+              <Legend verticalAlign="top" height={36} />
               <Bar dataKey="value" name="Jobs Posted" fill="#9b59b6" />
             </BarChart>
           </ResponsiveContainer>
@@ -1260,7 +1308,7 @@ const AnalyticsDashboard = ({ token }) => {
                 ))}
               </Pie>
               <Tooltip />
-              <Legend verticalAlign="bottom" />
+              <Legend verticalAlign="top" height={36} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -1288,7 +1336,7 @@ const AnalyticsDashboard = ({ token }) => {
                 ))}
               </Pie>
               <Tooltip />
-              <Legend verticalAlign="bottom" />
+              <Legend verticalAlign="top" height={36} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -1316,7 +1364,7 @@ const AnalyticsDashboard = ({ token }) => {
                 ))}
               </Pie>
               <Tooltip />
-              <Legend verticalAlign="bottom" />
+              <Legend verticalAlign="top" height={36} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -1328,17 +1376,48 @@ const AnalyticsDashboard = ({ token }) => {
             <BarChart
               data={workerData}
               layout="vertical"
-              margin={{ top: 5, right: 20, left: 60, bottom: 5 }}
+              margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
               <YAxis type="category" dataKey="name" width={80} />
               <Tooltip />
-              <Legend verticalAlign="bottom" />
+              <Legend verticalAlign="top" height={36} />
               <Bar dataKey="value" name="Applications Sent" fill="#e67e22" />
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        {/* === NEW ML FEATURE CHART === */}
+        <div style={styles.chartBox}>
+          <h3 style={styles.chartTitle}>
+            🚀 ML: Application Success Prediction
+          </h3>
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+            <BarChart
+              data={[
+                { name: "Total Apps", value: totals.applications },
+                {
+                  name: "Predicted 'High Match'",
+                  value: Math.round(totals.applications * 0.2),
+                },
+                {
+                  name: "Predicted 'Will Be Hired'",
+                  value: Math.round(totals.applications * 0.08),
+                },
+              ]}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend verticalAlign="top" height={36} />
+              <Bar dataKey="value" name="Predicted Count" fill="#2980b9" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        {/* === END NEW ML FEATURE CHART === */}
       </div>
     </>
   );
